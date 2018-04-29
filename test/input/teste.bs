@@ -1,0 +1,36 @@
+module Test where
+
+import Blabla
+
+//BINDINGS
+
+-- | Data documentation
+data Teste :: Type -> Type
+
+-- | Function documentation
+-- With comments
+function :: Int -> Int
+         -> ThreeEff Double
+x y z ->
+  var daora;
+  return x + y + z;
+
+-- Automatic property getter
+propertyGetTest :: Object -> Int
+property get propertyName
+
+-- Automatic property setter
+propertySetTest :: Object -> Int -> ThreeEff Unit
+property set propertyName
+
+-- Automatic constructor
+constructorTest :: Int -> Three Object
+constructor eff constructorName 1
+
+-- Automatic method
+methodTest :: Object -> Int -> Int -> Three Int
+method eff methodName 2
+
+-- Automatic function
+functionTest :: Int -> Int -> Int
+function pure functionName 2
