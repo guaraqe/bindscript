@@ -314,7 +314,7 @@ which is converted to the following in Javascript:
 
 ```
 exports.propertySetTest = function(dict0) {
-  function(var0) {
+  return function(var0) {
     return function(var1) {
       return function() {
         var0.propertyName = var1;
