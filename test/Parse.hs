@@ -60,24 +60,24 @@ autoBody :: TestTree
 autoBody = testGroup "Auto body"
   [
     testCase "Property get without newline" $
-      Right (AutoPropertyGet "name") @=?
+      Right (AutoPropertyGet "name" 0) @=?
       parse autoPropertyParser "property get name"
 
   , testCase "Property set with newline" $
-      Right (AutoPropertySet "name") @=?
+      Right (AutoPropertySet "name" 0) @=?
       parse autoPropertyParser "property set name\n"
 
   , testCase "Constructor without newline" $
-      Right (AutoConstructor Eff "name" 2) @=?
-      parse autoModeParser "constructor eff name 2"
+      Right (AutoConstructor Eff "name" 2 1) @=?
+      parse autoModeParser "constructor eff name 2 1"
 
   , testCase "Method with newline" $
-      Right (AutoMethod Pure "name" 0) @=?
+      Right (AutoMethod Pure "name" 0 0) @=?
       parse autoModeParser "method pure name 0\n"
 
   , testCase "Function without newline" $
-      Right (AutoFunction Eff "name" 0) @=?
-      parse autoModeParser "function eff name 0\n"
+      Right (AutoFunction Eff "name" 0 2) @=?
+      parse autoModeParser "function eff name 0 2\n"
   ]
 
 --------------------------------------------------------------------------------

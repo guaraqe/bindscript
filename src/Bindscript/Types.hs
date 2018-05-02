@@ -52,11 +52,11 @@ data Auto = Auto
 
 
 data AutoMode
-  = AutoPropertyGet Text
-  | AutoPropertySet Text
-  | AutoConstructor Eff Text Int
-  | AutoMethod Eff Text Int
-  | AutoFunction Eff Text Int
+  = AutoPropertyGet Text Int
+  | AutoPropertySet Text Int
+  | AutoConstructor Eff Text Int Int
+  | AutoMethod Eff Text Int Int
+  | AutoFunction Eff Text Int Int
   deriving (Show, Eq)
 
 data Eff = Pure | Eff

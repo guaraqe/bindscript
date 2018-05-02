@@ -15,9 +15,9 @@ Writing Purescript bindings for Javascript libraries is very tedious for many re
 - javascript functions and methods must be curried manually;
 - the code being written very often follows a repetitive template.
 
-While other solutions exist for some of these problems, like `Data.Function.Uncurried` or [easy-ffi](https://github.com/pelotom/purescript-easy-ffi), `bindscript` aims to give an improved experience in all of these aspects.
+While other solutions exist for some of these problems, like using `Data.Function.Uncurried` or [easy-ffi](https://github.com/pelotom/purescript-easy-ffi), `bindscript` aims to give an improved experience in all of these aspects.
 
-It works by writing a single `.bs` file containing Purescript type definitions and Javascript function bodies or accessory methods, and generate both `.js` and `.purs` files containing the bindings.
+We do this by writing a single `.bs` file containing Purescript type definitions and Javascript function bodies (or accessory methods), and generate both `.js` and `.purs` files containing the bindings.
 
 ## Usage
 
@@ -53,8 +53,8 @@ propertyGetTest :: Object -> Int
 property get propertyName
 
 -- Automatic property setter
-propertySetTest :: Object -> Int -> ThreeEff Unit
-property set propertyName
+propertySetTest :: Class a => a -> Int -> ThreeEff Unit
+property set propertyName 1
 
 -- Automatic constructor
 constructorTest :: Int -> Three Object
@@ -146,7 +146,7 @@ The block:
 
 ```
 -- Automatic property getter
-propertyGetTest :: Object -> Int
+getPropertyName :: Object -> Int
 property get propertyName
 ```
 
@@ -154,13 +154,13 @@ is transformed in Purescript to:
 
 ```
 -- Automatic property getter
-foreign import propertyGetTest :: Object -> Int
+foreign import getPropertyName :: Object -> Int
 ```
 
 and in Javascript to:
 
 ```
-exports.propertyGetTest = function(var0) {
+exports.getPropertyName = function(var0) {
   var0.propertyName;
 };
 ```
@@ -172,7 +172,7 @@ The block:
 
 ```
 -- Automatic property setter
-propertySetTest :: Object -> Int -> ThreeEff Unit
+setPropertyName :: Object -> Int -> ThreeEff Unit
 property set propertyName
 ```
 
@@ -188,7 +188,9 @@ and in Javascript to:
 ```
 exports.propertySetTest = function(var0) {
   return function(var1) {
-    var0.propertyName = var1;
+    return function() {
+      var0.propertyName = var1;
+    };
   };
 };
 ```
@@ -292,4 +294,32 @@ function pure _ 2
 
 functionName :: Int -> Int -> Int
 function pure functionName 2
+```
+
+### Typeclass constraints
+
+Typeclass constraints are converted to explicit dictionary parameters.
+One of the ways of simulating Javascript classes in Purescript is to define empty typeclasses and to put these classes as constraints to the class methods.
+
+If you are using this technique, you must add an extra parameter to the accessory methods saying the number of class constraints that the function has.
+In this case, we would have:
+
+```
+-- Automatic property setter
+propertySetTest :: Class a => a -> Int -> ThreeEff Unit
+property set propertyName 1
+```
+
+which is converted to the following in Javascript:
+
+```
+exports.propertySetTest = function(dict0) {
+  function(var0) {
+    return function(var1) {
+      return function() {
+        var0.propertyName = var1;
+      };
+    };
+  };
+};
 ```

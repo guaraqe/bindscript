@@ -111,16 +111,18 @@ autoModeParser = do
   someSpace
   name <- word
   someSpace
-  number <- word
+  number <- read . Text.unpack <$> word
+  manySpace
+  number2 <- maybe 0 (read . Text.unpack) <$> maybeWord
   manySpace
   tryOrNothing eol
   case auto of
     "method" ->
-      pure $ AutoMethod m name (read $ Text.unpack number)
+      pure $ AutoMethod m name number number2
     "function" ->
-      pure $ AutoFunction m name (read $ Text.unpack number)
+      pure $ AutoFunction m name number number2
     "constructor" ->
-      pure $ AutoConstructor m name (read $ Text.unpack number)
+      pure $ AutoConstructor m name number number2
     _ ->
       fail "Could not parse Auto"
 
@@ -132,10 +134,12 @@ autoPropertyParser = do
   someSpace
   name <- word
   manySpace
+  number <- maybe 0 (read . Text.unpack) <$> maybeWord
+  manySpace
   tryOrNothing eol
   case m of
-    "get" -> pure $ AutoPropertyGet name
-    "set" -> pure $ AutoPropertySet name
+    "get" -> pure $ AutoPropertyGet name number
+    "set" -> pure $ AutoPropertySet name number
     _ -> fail "Could not parse Auto"
 
 monadicParser :: Parser Eff
@@ -223,6 +227,11 @@ commentParser =
 
 word :: Parser Text
 word = takeWhileP Nothing (\c -> not $ isSeparator c || isControl c)
+
+maybeWord :: Parser (Maybe Text)
+maybeWord = do
+  w <- takeWhileP Nothing (\c -> not $ isSeparator c || isControl c)
+  if Text.null w then pure Nothing else pure (Just w)
 
 manySpace :: Parser String
 manySpace = many (char ' ')

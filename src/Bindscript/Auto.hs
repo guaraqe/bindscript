@@ -16,34 +16,40 @@ import qualified Data.Text as Text
 
 autoToFunction :: Auto -> Function
 
-autoToFunction (Auto name typ (AutoPropertyGet txt) comm) =
+autoToFunction (Auto name typ (AutoPropertyGet txt n) comm) =
   let
     vars@(Var v:_) = toVars Pure 0
+    dict = dictVars n
   in
-    Function name typ vars (propertyGetBody v (replaceName name txt)) comm
-autoToFunction (Auto name typ (AutoPropertySet txt) comm) =
-  let
-    vars@(Var v: Var r:_) = toVars Pure 1
-  in
-    Function name typ vars (propertySetBody v (replaceName name txt) r) comm
+    Function name typ (dict <> vars) (propertyGetBody v (replaceName name txt)) comm
 
-autoToFunction (Auto name typ (AutoConstructor mon txt n) comm) =
+autoToFunction (Auto name typ (AutoPropertySet txt n) comm) =
+  let
+    vars@(Var v: Var r:_) = toVars Eff 1
+    dict = dictVars n
+  in
+    Function name typ (dict <> vars) (propertySetBody v (replaceName name txt) r) comm
+
+autoToFunction (Auto name typ (AutoConstructor mon txt n d) comm) =
   let
     vars = toVars mon (n - 1)
+    dict = dictVars d
   in
-    Function name typ vars (constructorBody (replaceName name txt) vars) comm
+    Function name typ (dict <> vars) (constructorBody (replaceName name txt) vars) comm
 
-autoToFunction (Auto name typ (AutoMethod mon txt n) comm) =
+autoToFunction (Auto name typ (AutoMethod mon txt n d) comm) =
   let
     vars@(Var v:vs) = toVars mon n
+    dict = dictVars d
   in
-    Function name typ vars (methodBody v (replaceName name txt) vs) comm
+    Function name typ (dict <> vars) (methodBody v (replaceName name txt) vs) comm
 
-autoToFunction (Auto name typ (AutoFunction mon txt n) comm) =
+autoToFunction (Auto name typ (AutoFunction mon txt n d) comm) =
   let
     vars = toVars mon (n - 1)
+    dict = dictVars d
   in
-    Function name typ vars (functionBody (replaceName name txt) vars) comm
+    Function name typ (dict <> vars) (functionBody (replaceName name txt) vars) comm
 
 --------------------------------------------------------------------------------
 
@@ -58,10 +64,15 @@ replaceName :: Text -> Text -> Text
 replaceName t "_" = t
 replaceName _ t = t
 
+
+dictVars :: Int -> [Var]
+dictVars n =
+  fmap (\k -> Var ("dict" <> Text.pack (show k))) [0..n-1]
+
 --------------------------------------------------------------------------------
 
 propertyGetBody :: Text -> Text -> Text
-propertyGetBody o p = o <> "." <> p <> ";"
+propertyGetBody o p = "return " <> o <> "." <> p <> ";"
 
 propertySetBody :: Text -> Text -> Text -> Text
 propertySetBody o p r = o <> "." <> p <> " = " <> r <> ";"
